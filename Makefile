@@ -4,7 +4,18 @@ BUILD_DIR = ./build
 
 PROJ = blink
 
-OBJECTS += ./main.o
+#OBJECTS += ./main.o
+#OBJECTS += ./main2.o
+OBJECTS += ./main3.o
+#OBJECTS += ./main4.o
+
+FREERTOS_OBJECTS += ./freertos/tasks.o
+FREERTOS_OBJECTS += ./freertos/list.o
+FREERTOS_OBJECTS += ./freertos/queue.o
+FREERTOS_OBJECTS += ./freertos/portable/MemMang/heap_2.o
+FREERTOS_OBJECTS += ./freertos/portable/GCC/ARM_CM3/port.o
+#FREERTOS_OBJECTS += ./trace/trcKernelPort.o
+#FREERTOS_OBJECTS += ./trace/trcSnapshotRecorder.o
 
 SYS_OBJECTS += ./mbed/TARGET_LPC1768/TOOLCHAIN_GCC_ARM/analogin_api.o
 SYS_OBJECTS += ./mbed/TARGET_LPC1768/TOOLCHAIN_GCC_ARM/analogout_api.o
@@ -38,8 +49,15 @@ MBED_INCLUDE_PATHS += -I./mbed/TARGET_LPC1768/TARGET_NXP/TARGET_LPC176X/
 MBED_INCLUDE_PATHS += -I./mbed/TARGET_LPC1768/TARGET_NXP/TARGET_LPC176X/device
 MBED_INCLUDE_PATHS += -I./mbed/TARGET_LPC1768/TARGET_NXP/TARGET_LPC176X/TARGET_MBED_LPC1768
 
+#MBED_INCLUDE_PATHS += -I./trace/config
+#MBED_INCLUDE_PATHS += -I./trace/include
+
+FREERTOS_INCLUDE_PATHS += -I./freertos/include
+FREERTOS_INCLUDE_PATHS += -I./freertos/portable/GCC/ARM_CM3
+
 INCLUDE_PATHS += -I./
 INCLUDE_PATHS += $(MBED_INCLUDE_PATHS) 
+INCLUDE_PATHS += $(FREERTOS_INCLUDE_PATHS)
 
 LIBRARY_PATHS += -L./mbed/TARGET_LPC1768/TOOLCHAIN_GCC_ARM
 LIBRARIES = -lmbed
@@ -107,13 +125,17 @@ all: $(BUILD_DIR)/$(PROJ).bin size
 
 clean:
 	+@echo "Cleaning files..."
-	@rm -f $(BUILD_DIR)/$(PROJ).bin $(BUILD_DIR)/$(PROJ).elf $(OBJECTS) $(DEPS)
+	@rm -f $(BUILD_DIR)/$(PROJ).bin $(BUILD_DIR)/$(PROJ).elf $(OBJECTS) $(FREERTOS_OBJECTS) $(DEPS)
+
+.c.o:
+	+@echo "Compile: $<"
+	@$(CC) $(CC_FLAGS) $(CC_SYMBOLS) -std=gnu99 $(INCLUDE_PATHS) -g -o $@ $<	
 
 .cpp.o:
 	+@echo "Compile: $<"
 	@$(CPP) $(CC_FLAGS) $(CC_SYMBOLS) -std=gnu++98 $(INCLUDE_PATHS) -g -o $@ $<	
 
-$(BUILD_DIR)/$(PROJ).elf: $(OBJECTS) $(SYS_OBJECTS)
+$(BUILD_DIR)/$(PROJ).elf: $(OBJECTS) $(FREERTOS_OBJECTS) $(SYS_OBJECTS)
 	+@echo "Linking: $@"
 	@$(LD) $(LD_FLAGS) -T$(LINKER_SCRIPT) $(LIBRARY_PATHS) -o $@ $^ $(LIBRARIES) $(LD_SYS_LIBS)
 
@@ -124,5 +146,5 @@ $(BUILD_DIR)/$(PROJ).bin: $(BUILD_DIR)/$(PROJ).elf
 size: $(BUILD_DIR)/$(PROJ).elf
 	$(SIZE) $<
 
-DEPS = $(OBJECTS:.o=.d) $(SYS_OBJECTS:.o=.d)
+DEPS = $(OBJECTS:.o=.d) $(SYS_OBJECTS:.o=.d) $(FREERTOS_OBJECTS:.o=.d)
 -include $(DEPS)

@@ -1,6 +1,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "mbed.h"
+#include "semphr.h"
 
 extern "C"{
 void vApplicationIdleHook( void );
@@ -17,14 +18,26 @@ struct Tasks
 
 Tasks tareas[3] =
   {
-    { "t1", 1000, 4000, 4000, 3 },
-    { "t2", 1000, 5000, 5000, 2 },
-    { "t3", 3000, 6000, 6000, 1 } };
+    { "t1", 3000, 4000, 4000, 2 },
+    { "t2", 2000, 5000, 5000, 2 },
+    { "t3", 3000, 6000, 6000, 2 } };
 
 DigitalOut leds[3] =
   { LED1, LED2, LED3 };
 
+SemaphoreHandle_t xSemaphore = 0;
+
 Serial pc (USBTX, USBRX);
+
+//------------------------------------------------------------------------------
+
+/* Esta función accede a un recurso compartido. */
+
+void access_shared_resource(TickType_t retardo) {
+
+  vTaskDelay(retardo);
+
+}
 
 void
 eatCpu (TickType_t ticks)
@@ -56,12 +69,14 @@ thread (void* params)
   int inst = 0;
   while (1)
     {
-      inicio = xTaskGetTickCount ();
-      eatCpu (tareas[i].ci);
-      final = xTaskGetTickCount ();
-      pc.printf ("Tarea %d [%d, %d, %d]\n\r", i + 1, inicio, final, inst);
-      if(final > tareas[i].di * (inst +1 )){
-          pc.printf ("Se supero el Vencimiento de la tarea %d en %d MS\n\r", i + 1, final - tareas[i].di * (inst +1 ));
+
+      if(xSemaphoreTake(xSemaphore, portMAX_DELAY)){
+          pc.printf ("La tarea %d accede al recurso\n\r", i+1);
+          access_shared_resource(tareas[i].ci);
+          xSemaphoreGive(xSemaphore);
+      }
+      else{
+          pc.printf ("NO puede acceder al recurso la tarea %d\n\r", i+1);
       }
       vTaskDelayUntil (&prev, tareas[i].ti);
       inst++;
@@ -72,6 +87,8 @@ thread (void* params)
 int
 main ()
 {
+  xSemaphore = xSemaphoreCreateMutex ();
+
   for (int i = 0; i < 3; i++)
     {
       xTaskCreate (thread, tareas[i].name, 256, (void *) i, tareas[i].priority,
