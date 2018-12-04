@@ -18,26 +18,15 @@ struct Tasks
 
 Tasks tareas[3] =
   {
-    { "t1", 3000, 4000, 4000, 2 },
-    { "t2", 2000, 5000, 5000, 2 },
-    { "t3", 3000, 6000, 6000, 2 } };
-
-DigitalOut leds[3] =
-  { LED1, LED2, LED3 };
+    { "t1", 100, 4000, 4000, 4 },
+    { "t2", 100, 5000, 5000, 3 },
+    { "t3", 4000, 12000, 12000, 2 } };
 
 SemaphoreHandle_t xSemaphore = 0;
 
 Serial pc (USBTX, USBRX);
 
 //------------------------------------------------------------------------------
-
-/* Esta función accede a un recurso compartido. */
-
-void access_shared_resource(TickType_t retardo) {
-
-  vTaskDelay(retardo);
-
-}
 
 void
 eatCpu (TickType_t ticks)
@@ -59,6 +48,14 @@ eatCpu (TickType_t ticks)
     }
 }
 
+/* Esta función accede a un recurso compartido. */
+
+void access_shared_resource(TickType_t retardo) {
+
+  eatCpu (retardo);
+
+}
+
 void
 thread (void* params)
 {
@@ -70,14 +67,13 @@ thread (void* params)
   while (1)
     {
 
-      if(xSemaphoreTake(xSemaphore, portMAX_DELAY)){
+      if(xSemaphoreTake(xSemaphore, portMAX_DELAY)== pdTRUE){
           pc.printf ("La tarea %d accede al recurso\n\r", i+1);
           access_shared_resource(tareas[i].ci);
+
           xSemaphoreGive(xSemaphore);
       }
-      else{
-          pc.printf ("NO puede acceder al recurso la tarea %d\n\r", i+1);
-      }
+
       vTaskDelayUntil (&prev, tareas[i].ti);
       inst++;
 
@@ -87,7 +83,7 @@ thread (void* params)
 int
 main ()
 {
-  xSemaphore = xSemaphoreCreateMutex ();
+  xSemaphore = xSemaphoreCreateMutex();
 
   for (int i = 0; i < 3; i++)
     {
