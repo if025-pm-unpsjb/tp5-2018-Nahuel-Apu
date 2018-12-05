@@ -3,10 +3,6 @@
 #include "mbed.h"
 #include "semphr.h"
 
-extern "C"{
-void vApplicationIdleHook( void );
-}
-
 struct Tasks
 {
   char name[10];

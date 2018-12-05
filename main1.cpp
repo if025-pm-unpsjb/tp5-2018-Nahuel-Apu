@@ -11,10 +11,9 @@ struct Tasks
   UBaseType_t priority;
 };
 
-Tasks tareas [3]= {{"t1",500,4000,4000,3},{"t2",250,5000,5000,2},{"t3",250,6000,6000,1}};
-
-DigitalOut leds [3] = {LED1,LED2,LED3};
-
+Tasks tareas [3]= {{"t1",2000,4000,4000,3},{"t2",1000,5000,5000,2},{"t3",1000,6000,6000,1}};
+//Tasks tareas [3]= {{"t1",3000,5000,5000,3},{"t2",1000,7000,7000,2},{"t3",2000,10000,10000,1}};
+//Tasks tareas [5]= {{"t1",2000,5000,5000,3},{"t2",1000,6000,6000,2},{"t3",1000,7000,7000,1},{"t4",2000,10000,10000,1},{"t5",1000,20000,20000,1}};
 Serial pc (USBTX, USBRX);
 
 void eatCpu(TickType_t ticks)
@@ -55,12 +54,9 @@ void thread(void* params){
 
 int main()
 {
-  for(int i= 0;i < 3 ;i++){
+  for(int i= 0;i < (int)(sizeof(tareas)/sizeof(Tasks));i++){
       xTaskCreate(thread,tareas[i].name,256,(void *) i,tareas[i].priority,NULL);
   }
-  /*xTaskCreate(thread1,"t1",256,(void *) 0,3,NULL);
-  xTaskCreate(thread2,"t2",256,NULL,2,NULL);
-  xTaskCreate(thread3,"t3",256,NULL,1,NULL);*/
   vTaskStartScheduler();
   for(;;);
 }

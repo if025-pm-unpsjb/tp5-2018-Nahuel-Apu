@@ -4,10 +4,12 @@ BUILD_DIR = ./build
 
 PROJ = blink
 
-#OBJECTS += ./main.o
+OBJECTS += ./main1.o
 #OBJECTS += ./main2.o
-OBJECTS += ./main3.o
-#OBJECTS += ./main4.o
+#OBJECTS += ./main3.o
+#OBJECTS += ./main4a.o
+#OBJECTS += ./main4b.o
+#OBJECTS += ./main4c.o
 
 FREERTOS_OBJECTS += ./freertos/tasks.o
 FREERTOS_OBJECTS += ./freertos/list.o

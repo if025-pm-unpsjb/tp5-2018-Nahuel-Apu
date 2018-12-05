@@ -2,10 +2,6 @@
 #include "task.h"
 #include "mbed.h"
 
-extern "C"{
-void vApplicationIdleHook( void );
-}
-
 struct Tasks
 {
   char name[10];
@@ -20,9 +16,6 @@ Tasks tareas[3] =
     { "t1", 1000, 4000, 4000, 3 },
     { "t2", 1000, 5000, 5000, 2 },
     { "t3", 3000, 6000, 6000, 1 } };
-
-DigitalOut leds[3] =
-  { LED1, LED2, LED3 };
 
 Serial pc (USBTX, USBRX);
 
