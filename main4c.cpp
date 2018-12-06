@@ -70,7 +70,7 @@ thread2 (void* params)
             }
         }
 
-      eatCpu (2000);
+      eatCpu (1000);
       msg = 2;
       if ( xQueueSend(xQueue5 , (void * ) &msg, portMAX_DELAY) == pdTRUE)
         {
